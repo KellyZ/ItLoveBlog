@@ -1,8 +1,8 @@
 学习完Git对象与引用这两个底层原理后，我们站在更高的维度看看Git的基本工作流程。学些之前，先看看下面两张图：
 
-![image](/Users/kk/Pictures/ziI7Nv.jpg!web.jpeg)
+![image](https://github.com/KellyZ/ItLoveBlog/tree/master/images/ziI7Nv.jpg!web.jpeg)
 
-![image](/Users/kk/Pictures/20140614202514_819.png)
+![image](https://github.com/KellyZ/ItLoveBlog/tree/master/images/20140614202514_819.png)
 
 ## 基本工作流
 

@@ -1,4 +1,3 @@
-## web系列005：NodeJS crypt模块
 NodeJS原生Crypto模块提供基本的加解密功能。
 
 ## 接口
@@ -39,6 +38,7 @@ NodeJS原生Crypto模块提供基本的加解密功能。
 
 ## 网络安全模型
 在网络上通信通常会有两类安全问题：
+
 1. 身份认证
 2. 数据安全：保密性、完整性
 
@@ -65,7 +65,9 @@ NodeJS原生Crypto模块提供基本的加解密功能。
 数字签名有两种功效：一是能确定消息确实是由发送方签名并发出来的，因为别人假冒不了发送方的签名。二是数字签名能确定消息的完整性。
 
 普通数字签名算法有RSA、ElGamal、Fiat-Shamir、Guillou- Quisquarter、Schnorr、Ong-Schnorr-Shamir数字签名算法、Des/DSA,椭圆曲线数字签名算法
+
 **NodeJS实现签名**
+
 	var crypto = require('crypto');
 	var fs = require('fs');
 	
@@ -88,7 +90,9 @@ NodeJS原生Crypto模块提供基本的加解密功能。
 	});
 
 **NodeJS实现RSA**
+
 NodeJS crypt模块没有支持RSA，需要第三方ursa库实现，ursa底层使用openssl。
+
 	var ursa = require("ursa");
 	
 	var clearText='使用RSA加密解密字符串';
@@ -155,20 +159,25 @@ NodeJS crypt模块没有支持RSA，需要第三方ursa库实现，ursa底层使
 
 #### 数字摘要
 所谓的消息摘要就是通过一种单向算法计算出来的唯一对应一个文件或数据的固定长度的值，也被称作数字摘要。根据不同的算法，消息摘要的长度一般为128位或160位。常用的消息摘要的算法有MD5和SHA1。一个文件的消息摘要就同一个人的指纹一样，它可以唯一代表这个文件，如果这个文件被修改了，那么它的消息摘要也一定会发生变化，所以，我们可以通过对一个文件的**消息摘要进行签名**来代替对它本身进行签名。
+
 **MD5实现**
+
 	var crypto = require('crypto');
 	var content = 'password’；
 	var md5 = crypto.createHash('md5');
 	md5.update(content);
 	var d = md5.digest('hex'); 
 **SHA实现**
+
 	var crypto = require('crypto');
 	var content = 'password’；
 	var shasum = crypto.createHash('sha1');
 	shasum.update(content);
 	var d = shasum.digest('hex');
 随着互联网的发展，MD5已经变得越来越不安全了，黑客可以通过彩虹表，查出MD5值所对应的密码，为了解决这个问题，很多网站都开始采用需要密钥加密的Hmac算法。
+
 **Hmac实现**
+
 	const crypto = require('crypto');
 	const hmac = crypto.createHmac('sha256', 'a secret');
 	
@@ -176,9 +185,13 @@ NodeJS crypt模块没有支持RSA，需要第三方ursa库实现，ursa底层使
 	console.log(hmac.digest('hex'));
 
 hmac主要应用在身份验证中，它的使用方法是这样的：
+
 (1) 客户端发出登录请求（假设是浏览器的GET请求）
+
 (2) 服务器返回一个随机值，并在会话中记录这个随机值
+
 (3) 客户端将该随机值作为密钥，**用户密码**进行hmac运算，然后提交给服务器
+
 (4) 服务器读取用户数据库中的**用户密码**和步骤2中发送的随机值做与客户端一样的hmac运算，然后与用户发送的结果比较，如果结果一致则验证用户合法
 
 在这个过程中，可能遭到安全攻击的是服务器发送的随机值和用户发送的hmac结果，而对于截获了这两个值的黑客而言这两个值是没有意义的，绝无获取用户密码的可能性，随机值的引入使hmac只在当前会话中有效，大大增强了安全性和实用性。大多数的语言都实现了hmac算法，比如php的mhash、python的hmac.py、java的MessageDigest类，在web验证中使用hmac也是可行的，用js进行md5运算的速度也是比较快的。
@@ -187,7 +200,9 @@ hmac主要应用在身份验证中，它的使用方法是这样的：
 
 ### 数据安全
 数据加密使用对称加密，对称加密挑战问题是密钥的安全，解决密钥安全通过密钥交换实时生成。
+
 **Diffie-Hellman实现**
+
 	var crypto = require('crypto');
 	
 	var alice = crypto.getDiffieHellman('modp5');
@@ -208,6 +223,7 @@ hmac主要应用在身份验证中，它的使用方法是这样的：
 	//两个共享密钥相同
 	console.log(alice_secret == bob_secret);	//true
 **EC Diffie-Hellman**
+
 	var crypto = require('crypto');
 	
 	var alice = crypto.createECDH('secp256k1');
@@ -222,8 +238,9 @@ hmac主要应用在身份验证中，它的使用方法是这样的：
 	var bob_secret = bob.computeSecret(alice.getPublicKey(), null, 'hex');
 	
 	//两个共享密钥应该相同
-	console.log(alice_secret == bob_secret);    //tre
+	console.log(alice_secret == bob_secret);    //true
 **对称加密**
+
 	var crypto = require('crypto');
 	var fs = require('fs');
 	

@@ -74,8 +74,8 @@ NodeJS原生Crypto模块提供基本的加解密功能。
 	var sign = crypto.createSign('RSA-SHA256');
 	var verify = crypto.createVerify('RSA-SHA256');
 	
-	var privateKey = fs.readFileSync('./rsa/ca.key').toString(); 		//rsa私钥
-	var publicKey = fs.readFileSync('./rsa/ca.crt').toString();		//rsa公钥
+	var privateKey = fs.readFileSync('./rsa/ca.key').toString(); //rsa私钥
+	var publicKey = fs.readFileSync('./rsa/ca.crt').toString();	//rsa公钥
 	
 	var s = fs.ReadStream('./file1');
 	s.on('data', function(d) {
@@ -84,9 +84,9 @@ NodeJS原生Crypto模块提供基本的加解密功能。
 	});
 	
 	s.on('end', function() {
-	var signture = sign.sign(privateKey);//生成签名
-	var result = verify.verify(publicKey, signture);//验证签名
-	console.log(result);	//true
+    	var signture = sign.sign(privateKey);//生成签名
+    	var result = verify.verify(publicKey, signture);//验证签名
+    	console.log(result);//true
 	});
 
 **NodeJS实现RSA**
@@ -107,54 +107,54 @@ NodeJS crypt模块没有支持RSA，需要第三方ursa库实现，ursa底层使
 	console.log('加密数据解密：'+decrypted);
 	
 	function encrypt(clearText, keySizeBytes){
-	var buffer = new Buffer(clearText);
-	var maxBufferSize = keySizeBytes - 42; //according to ursa documentation
-	var bytesDecrypted = 0;
-	var encryptedBuffersList = [];
+    	var buffer = new Buffer(clearText);
+    	var maxBufferSize = keySizeBytes - 42; //according to ursa documentation
+    	var bytesDecrypted = 0;
+    	var encryptedBuffersList = [];
+    	
+    	//loops through all data buffer encrypting piece by piece
+    	while(bytesDecrypted < buffer.length){
+        	//calculates next maximun length for temporary buffer and creates it
+        	var amountToCopy = Math.min(maxBufferSize, buffer.length - bytesDecrypted);
+        	var tempBuffer = new Buffer(amountToCopy);
+        	
+        	//copies next chunk of data to the temporary buffer
+        	buffer.copy(tempBuffer, 0, bytesDecrypted, bytesDecrypted + amountToCopy);
+        	
+        	//encrypts and stores current chunk
+        	var encryptedBuffer = keyPair.encrypt(tempBuffer);
+        	encryptedBuffersList.push(encryptedBuffer);
+        	
+        	bytesDecrypted += amountToCopy;
+	   }
 	
-	//loops through all data buffer encrypting piece by piece
-	while(bytesDecrypted < buffer.length){
-	//calculates next maximun length for temporary buffer and creates it
-	var amountToCopy = Math.min(maxBufferSize, buffer.length - bytesDecrypted);
-	var tempBuffer = new Buffer(amountToCopy);
-	
-	//copies next chunk of data to the temporary buffer
-	buffer.copy(tempBuffer, 0, bytesDecrypted, bytesDecrypted + amountToCopy);
-	
-	//encrypts and stores current chunk
-	var encryptedBuffer = keyPair.encrypt(tempBuffer);
-	encryptedBuffersList.push(encryptedBuffer);
-	
-	bytesDecrypted += amountToCopy;
-	}
-	
-	//concatenates all encrypted buffers and returns the corresponding String
-	return Buffer.concat(encryptedBuffersList).toString('base64');
+    	//concatenates all encrypted buffers and returns the corresponding String
+    	return Buffer.concat(encryptedBuffersList).toString('base64');
 	}
 	
 	function decrypt(encryptedString, keySizeBytes){
 	
-	var encryptedBuffer = new Buffer(encryptedString, 'base64');
-	var decryptedBuffers = [];
+    	var encryptedBuffer = new Buffer(encryptedString, 'base64');
+    	var decryptedBuffers = [];
+    	
+    	//if the clear text was encrypted with a key of size N, the encrypted 
+    	//result is a string formed by the concatenation of strings of N bytes long, 
+    	//so we can find out how many substrings there are by diving the final result
+    	//size per N
+    	var totalBuffers = encryptedBuffer.length / keySizeBytes;
+    	
+    	//decrypts each buffer and stores result buffer in an array
+    	for(var i = 0 ; i < totalBuffers; i++){
+        	//copies next buffer chunk to be decrypted in a temp buffer
+        	var tempBuffer = new Buffer(keySizeBytes);
+        	encryptedBuffer.copy(tempBuffer, 0, i*keySizeBytes, (i+1)*keySizeBytes);
+        	//decrypts and stores current chunk
+        	var decryptedBuffer = keyPair.decrypt(tempBuffer);
+        	decryptedBuffers.push(decryptedBuffer);
+	   }
 	
-	//if the clear text was encrypted with a key of size N, the encrypted 
-	//result is a string formed by the concatenation of strings of N bytes long, 
-	//so we can find out how many substrings there are by diving the final result
-	//size per N
-	var totalBuffers = encryptedBuffer.length / keySizeBytes;
-	
-	//decrypts each buffer and stores result buffer in an array
-	for(var i = 0 ; i < totalBuffers; i++){
-	//copies next buffer chunk to be decrypted in a temp buffer
-	var tempBuffer = new Buffer(keySizeBytes);
-	encryptedBuffer.copy(tempBuffer, 0, i*keySizeBytes, (i+1)*keySizeBytes);
-	//decrypts and stores current chunk
-	var decryptedBuffer = keyPair.decrypt(tempBuffer);
-	decryptedBuffers.push(decryptedBuffer);
-	}
-	
-	//concatenates all decrypted buffers and returns the corresponding String
-	return Buffer.concat(decryptedBuffers).toString();
+    	//concatenates all decrypted buffers and returns the corresponding String
+    	return Buffer.concat(decryptedBuffers).toString();
 	}
 
 #### 数字摘要

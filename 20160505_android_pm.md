@@ -12,27 +12,7 @@ SystemServer组件是由Zygote进程负责启动的，启动的时候就会调�
 
 services/core/java/com/android/server/pm/PackageManagerService.java
 
-main()
-
-   --> init1(args): 初始化SurfaceFlinger、SensorService、AudioFlinger、MediaPlayerService、CameraService和AudioPolicyService这几个服务
-   
-   --> init2() : 创建了一个ServerThread线程
-   
-   这个函数创建了一个ServerThread线程，通过PackageManagerService.main初始化PackageManagerService，还启动了其它很多的服务，如ActivityManagerService。
-   
-    class PackageManagerService extends IPackageManager.Stub {
-    	......
-    
-    	public static final IPackageManager main(Context context, boolean factoryTest) {
-    		PackageManagerService m = new PackageManagerService(context, factoryTest);
-    		ServiceManager.addService("package", m);
-    		return m;
-    	}
-    
-    	......
-    }
-    
-   PackageManagerService服务被添加到ServiceManager中去，ServiceManager是Android系统Binder进程间通信机制的守护进程，负责管理系统中的Binder对象。
+main()-->startBootstrapServices启动PackageManagerService，详情见Android_startup。
    
    
 ## PackageManagerService安装APK

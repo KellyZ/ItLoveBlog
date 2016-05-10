@@ -47,7 +47,7 @@ Entry ID是指每一个资源在其所属的资源类型中所出现的次序。
 5. 应用程序代码文件classes.dex
 6. 描述应用程序的签名信息的文件META-INFO
 
-![](./images/app_package.png)
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/app_package.png)
 
 ## 参考
 

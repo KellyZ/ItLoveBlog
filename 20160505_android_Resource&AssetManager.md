@@ -26,7 +26,6 @@ C++层的AssetManager类有三个重要的成员变量mAssetPaths、mResources�
             return null;
         }
         ......
-
         r = new Resources(assets, metrics, getConfiguration(), compInfo);
 
 
@@ -36,7 +35,6 @@ C++层的AssetManager类有三个重要的成员变量mAssetPaths、mResources�
 
         static const char* kSystemAssets = "framework/framework-res.apk";
         ......
-        
         bool AssetManager::addDefaultAssets()
         {
             const char* root = getenv("ANDROID_ROOT");
@@ -54,11 +52,9 @@ C++层的AssetManager类有三个重要的成员变量mAssetPaths、mResources�
 
         static const char* kAppZipName = NULL; //"classes.jar";
         ......
-        
         bool AssetManager::addAssetPath(const String8& path, void** cookie)
         {
             AutoMutex _l(mLock);
-        
             asset_path ap;
             ......                            
             // add overlay packages for /system/framework; apps are handled by the
@@ -87,7 +83,6 @@ C++层的AssetManager类有三个重要的成员变量mAssetPaths、mResources�
                     ......
                 }
             }
-        
             return true;
         }
 
@@ -101,21 +96,18 @@ C++层的AssetManager类有三个重要的成员变量mAssetPaths、mResources�
 
 ## 资源查找
 
-![](./images/1366046940_6832.jpg)
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/1366046940_6832.jpg)
 
 Android应用程序资源是可以划分是很多类别的，但是从资源查找的过程来看，它们可以归结为两大类。第一类资源是不对应有文件的，而第二类资源是对应有文件的，例如，字符串资源是直接编译在resources.arsc文件中的，而界面布局资源是在APK包里面是对应的单独的文件的。
 
 1. 以布局文件加载为例，会调用LayoutInflater.inflate：
 
         public abstract class LayoutInflater {
-        ......
-    
+            ......
             public View inflate(int resource, ViewGroup root) {
                 return inflate(resource, root, root != null);
             }
-        
             ......
-        
             public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
                 ......
                 XmlResourceParser parser = getContext().getResources().getLayout(resource);
@@ -125,7 +117,6 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
                     parser.close();
                 }
             }
-        
             ......
         }
     
@@ -133,13 +124,10 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
 
         public class Resources {
             ......
-        
             public XmlResourceParser getLayout(int id) throws NotFoundException {
                 return loadXmlResourceParser(id, "layout");
             }
-        
             ......
-            
             /*package*/ XmlResourceParser loadXmlResourceParser(int id, String type)
                     throws NotFoundException {
                 synchronized (mTmpValue) {
@@ -154,9 +142,7 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
                             + Integer.toHexString(value.type) + " is not valid");
                 }
             }
-            
             ......
-            
             public void getValue(int id, TypedValue outValue, boolean resolveRefs)
                     throws NotFoundException {
                 boolean found = mAssets.getResourceValue(id, outValue, resolveRefs);
@@ -172,10 +158,8 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
 
         public final class AssetManager {
             ......
-        
             private StringBlock mStringBlocks[] = null;
             ......
-        
             /*package*/ final boolean getResourceValue(int ident,
                                                        TypedValue outValue,
                                                        boolean resolveRefs)
@@ -190,9 +174,7 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
                 }
                 return false;
             }
-        
             ......
-            
             private native final int loadResourceValue(int ident, TypedValue outValue,boolean resolve);
         }
 
@@ -208,13 +190,11 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
                 return 0;
             }
             const ResTable& res(am->getResources());
-        
             Res_value value;
             ResTable_config config;
             uint32_t typeSpecFlags;
             ssize_t block = res.getResource(ident, &value, false, &typeSpecFlags, &config);
             ......
-        
             uint32_t ref = ident;
             if (resolve) {
                 block = res.resolveReference(&value, block, &ref);
@@ -247,17 +227,12 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
             if (rt) {
                 return rt;
             }
-        
             // Iterate through all asset packages, collecting resources from each.
-        
             AutoMutex _l(mLock);
-        
             if (mResources != NULL) {
                 return mResources;
             }
-        
             ......
-        
             const size_t N = mAssetPaths.size();
             for (size_t i=0; i<N; i++) {
                 Asset* ass = NULL;
@@ -287,7 +262,6 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
                                     mZipSet.setZipResourceTableAsset(ap.path, ass);
                             }
                         }
-        
                         if (i == 0 && ass != NULL) {
                             // If this is the first resource table in the asset
                             // manager, then we are going to cache it so that we
@@ -320,7 +294,6 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
                         ......
                         rt->add(ass, (void*)(i+1), !shared, idmap);
                     }
-        
                     if (!shared) {
                         delete ass;
                     }
@@ -329,7 +302,6 @@ Android应用程序资源是可以划分是很多类别的，但是从资源查�
                     delete idmap;
                 }
             }
-        
             ......
             if (!rt) {
                 mResources = rt = new ResTable();

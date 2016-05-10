@@ -385,9 +385,9 @@ frameworks/base/services/java/com/android/server/SystemServer.java：
     
 ## 进程的角度
 
-![](./images/android_ps.png)
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/android_ps.png)
 
-![](./images/android-boot.jpg)
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/android-boot.jpg)
 
 1. kthreadd进程: 是所有内核进程的父进程
 2. init进程 ： 是所有用户进程的父进程(或者父父进程)
@@ -432,9 +432,9 @@ frameworks/base/services/java/com/android/server/SystemServer.java：
 
 ## 总结
 
-![](./images/e516252bdb5ae1c1798ec9507a060f19.png)
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/e516252bdb5ae1c1798ec9507a060f19.png)
 
-![](./images/0_1273850759wbAp.gif)
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/0_1273850759wbAp.gif)
 
 ## 参考
 

@@ -1,6 +1,6 @@
 ## 说明
 
-![](./images/seandroid_framework.png)
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/seandroid_framework.png)
 
 以SELinux文件系统接口为边界，SEAndroid安全机制包含有内核空间和用户空间两部分支持。在内核空间，主要涉及到一个称为SELinux LSM的模块。而在用户空间中，涉及到Security Context、Security Server和SEAndroid Policy等模块。
 

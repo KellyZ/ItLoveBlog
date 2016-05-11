@@ -7,6 +7,10 @@
 Security Server负责安全访问控制逻辑，即由它来决定一个主体访问一个客体是否是合法的。这里说的主体一般就是指进程，而客体就是主体要访问的资源，例如文件。
 
 
+1. external/sepolicy：提供了Android平台中的安全策略源文件。同时，该目录下的tools还提供了诸如m4,checkpolicy等编译安全策略文件的工具。注意，这些工具运行于主机（即不是提供给Android系统使用的）
+2. external/libselinux：提供了Android平台中的libselinux，供Android系统使用。
+3. external/libsepol：提供了供安全策略文件编译时使用的一个工具checkcon。
+
 ## 安全上下文
 
 SEAndroid是一种基于安全策略的MAC安全机制。这种安全策略又是建立在对象的安全上下文的基础上的。
@@ -439,6 +443,61 @@ selinux_mnt是一个全局变量，它描述的是SELinux文件系统的安装�
 前面提到，在Android系统中，属性也是一项需要保护的资源。Init进程在启动的时候，会创建一块内存区域来维护系统中的属性，接着还会创建一个Property服务。这个Property服务通过socket提供接口给其它进程访问Android系统中的属性。其它进程通过socket来和Property服务通信时，Property服务可以获得它的安全上下文。有了这个安全上下文之后，Property服务就可以通过libselinux库提供的selabel_lookup函数到前面我们分析的property_contexts去查找要访问的属性的安全上下文了。有了这两个安全上下文之后，Property服务就可以决定是否允许一个进程访问它所指定的属性了。
 
 
+## 安全上下文和文件对应关系
+
+`u:r:type:level`
+
+1. user： external/sepolicy/users
+2. role:  external/sepolicy/roles
+3. type: external/sepolicy/attributes (*.te)
+
+`rule\_name source\_type target\_type:class perm_set`
+
+1. rule_name: allow allowaudit dontaudit neverallow
+2. class: external/sepolicy/security_classes
+3. perm_set: external/sepolicy/access_vectors
+
+## 安全上下文打标签
+
+`type_transition source_type target_type:class default_type;`
+
+    external/sepolicy/hostapd.te:type_transition hostapd wifi_data_file:dir wpa_socket "sockets";
+    external/sepolicy/hostapd.te:type_transition hostapd wifi_data_file:dir wpa_socket "hostapd";
+    external/sepolicy/dhcp.te:type_transition dhcp system_data_file:{ dir file } dhcp_data_file;
+    external/sepolicy/gpsd.te:type_transition gpsd gps_data_file:sock_file gps_socket;
+    external/sepolicy/sdcardd.te:type_transition sdcardd system_data_file:{ dir file } media_rw_data_file;
+    external/sepolicy/drmserver.te:type_transition drmserver apk_data_file:sock_file drmserver_socket;
+    external/sepolicy/watchdogd.te:type_transition watchdogd device:chr_file null_device "__null__";
+    external/sepolicy/fs_use:# Define type_transition rules if you want per-domain types.
+    external/sepolicy/logd.te:  type_transition logd device:file logd_debug;
+    external/sepolicy/te_macros:type_transition $1 $2:process $3;
+    external/sepolicy/te_macros:type_transition $1 $2:dir $3;
+    external/sepolicy/te_macros:type_transition $1 $2:notdevfile_class_set $3;
+    external/sepolicy/te_macros:type_transition $1 tmpfs:file $1_tmpfs;
+    external/sepolicy/te_macros:type_transition $1 device:chr_file klog_device "__kmsg__";
+    external/sepolicy/te_macros:type_transition $1 devpts:chr_file $1_devpts;
+    external/sepolicy/wpa.te:type_transition wpa wifi_data_file:dir wpa_socket "sockets";
+    external/sepolicy/installd.te:type_transition installd system_data_file:file install_data_file;
+    
+fs_use_xattr，fs_use_task和fs_use_trans，genfscon
+
+1. external/sepolicy/file_contexts
+2. external/sepolicy/fs_use
+3. external/sepolicy/genfs_context
+4. external/sepolicy/selinux-network.sh
+
+## 安全配置文件生成过程
+
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/20140221220228500.png)
+
+1. 左边一列代表安全配置的源文件。也即是大家在图6中看到的各种te文件，还有一些特殊的文件，例如前文提到的initial\_sid，initial\_sid\_contexts，access\_vectors、fs\_use,genfs\_contexts等。在这些文件中，我们要改的一般也是针对TE文件，其他文件由于和kernel内部的LSM等模块相关，所以除了厂家定制外，我们很难有机会去修改。
+2. 这些文件都是文本文件，它们会被组合到一起（图7中是用cat命令，不同平台处理方法不相同，但大致意思就是要把这些源文件的内容搞到一起去）。
+3. 搞到一起后的文件中有使用宏的地方，这时要利用m4命令对这些宏进行拓展。m4命令处理完后得到的文件叫policy.conf。前面我们也见过这个文件了，它是所有安全策略源文件的集合，宏也被替换。所以，读者可以通过policy.conf文件查看整个系统的安全配置情况，而不用到图6中那一堆文件中去找来找去的。
+4. policy.conf文件最终要被checkpolicy命令处理。该命令要检查neverallow是否被违背，语法是否正确等。最后，checkpolicy会将policy.conf打包生成一个二进制文件。在SEAndroid中，该文件叫sepolicy，而在Linux发行版本上，一般叫policy.26等名字。26表示SELinux的版本号。
+5. 最后，我们再把这个sepolicy文件传递到kernel LSM中，整个安全策略配置就算完成
+
+![](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/Android-seandroid-1-4.png)
+
 ## 参考
 
 1. http://blog.csdn.net/luoshengyang/article/details/37613135 （SEAndroid机制框架）
@@ -446,3 +505,4 @@ selinux_mnt是一个全局变量，它描述的是SELinux文件系统的安装�
 3. http://blog.csdn.net/luoshengyang/article/details/38054645 （对进程的保护）
 4. http://blog.csdn.net/luoshengyang/article/details/38102011 （对属性的保护）
 5. http://blog.csdn.net/luoshengyang/article/details/38326729 （对Binder IPC的保护）
+6. http://blog.csdn.net/innost/article/details/19299937

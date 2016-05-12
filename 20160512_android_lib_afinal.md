@@ -1,5 +1,3 @@
-afinal:
-
 https://github.com/yangfuhai/afinal
 
 ## 模块
@@ -16,23 +14,18 @@ https://github.com/yangfuhai/afinal
 
         public FinalHttp() {
             BasicHttpParams httpParams = new BasicHttpParams();
-    
             ConnManagerParams.setTimeout(httpParams, socketTimeout);
             ConnManagerParams.setMaxConnectionsPerRoute(httpParams, new ConnPerRouteBean(maxConnections));
             ConnManagerParams.setMaxTotalConnections(httpParams, 10);
-    
             HttpConnectionParams.setSoTimeout(httpParams, socketTimeout);
             HttpConnectionParams.setConnectionTimeout(httpParams, socketTimeout);
             HttpConnectionParams.setTcpNoDelay(httpParams, true);
             HttpConnectionParams.setSocketBufferSize(httpParams, DEFAULT_SOCKET_BUFFER_SIZE);
-    
             HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
-    
             SchemeRegistry schemeRegistry = new SchemeRegistry();
             schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
             schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
             ThreadSafeClientConnManager cm = new ThreadSafeClientConnManager(httpParams, schemeRegistry);
-    
             httpContext = new SyncBasicHttpContext(new BasicHttpContext());
             httpClient = new DefaultHttpClient(cm, httpParams);
             httpClient.addRequestInterceptor(new HttpRequestInterceptor() {
@@ -45,7 +38,6 @@ https://github.com/yangfuhai/afinal
                     }
                 }
             });
-    
             httpClient.addResponseInterceptor(new HttpResponseInterceptor() {
                 public void process(HttpResponse response, HttpContext context) {
                     final HttpEntity entity = response.getEntity();
@@ -63,11 +55,8 @@ https://github.com/yangfuhai/afinal
                     }
                 }
             });
-    
             httpClient.setHttpRequestRetryHandler(new RetryHandler(maxRetries));
-    
             clientHeaderMap = new HashMap<String, String>();
-            
         }
 
 ## Download
@@ -84,7 +73,7 @@ https://github.com/yangfuhai/afinal
             }
         };
     
-    private static final Executor executor =Executors.newFixedThreadPool(httpThreadCount, sThreadFactory);
+        private static final Executor executor =Executors.newFixedThreadPool(httpThreadCount, sThreadFactory);
 
 2. 使用HttpHandler异步下载
 
@@ -106,11 +95,9 @@ https://github.com/yangfuhai/afinal
     		try {
     			publishProgress(UPDATE_START); // 开始
     			makeRequestWithRetries((HttpUriRequest)params[0]);
-    			
     		} catch (IOException e) {
     			publishProgress(UPDATE_FAILURE,e,0,e.getMessage()); // 结束
     		}
-    
     		return null;
     	}
     	
@@ -126,7 +113,6 @@ https://github.com/yangfuhai/afinal
     			if(fileLen > 0)
     				request.setHeader("RANGE", "bytes="+fileLen+"-");
     		}
-    		
     		boolean retry = true;
     		IOException cause = null;
     		HttpRequestRetryHandler retryHandler = client.getHttpRequestRetryHandler();
@@ -182,15 +168,12 @@ https://github.com/yangfuhai/afinal
         				}
         				else{
         					responseBody = mStrEntityHandler.handleEntity(entity,this,charset);
-        				}
-        					
+        				}	
         			}
         			publishProgress(UPDATE_SUCCESS,responseBody);
-        			
         		} catch (IOException e) {
         			publishProgress(UPDATE_FAILURE,e,0,e.getMessage());
         		}
-        		
         	}
         }
         
@@ -199,18 +182,13 @@ https://github.com/yangfuhai/afinal
         public Object handleEntity(HttpEntity entity, EntityCallBack callback,String target,boolean isResume) throws IOException {
     		if (TextUtils.isEmpty(target) || target.trim().length() == 0)
     			return null;
-    
     		File targetFile = new File(target);
-    
     		if (!targetFile.exists()) {
     			targetFile.createNewFile();
     		}
-    
     		if(mStop){
     			return targetFile;
     		}
-    			
-    		
     		long current = 0;
     		FileOutputStream os = null;
     		if(isResume){
@@ -219,18 +197,14 @@ https://github.com/yangfuhai/afinal
     		}else{
     			os = new FileOutputStream(target);
     		}
-    		
     		if(mStop){
     			return targetFile;
-    		}
-    			
+    		}	
     		InputStream input = entity.getContent();
     		long count = entity.getContentLength() + current;
-    		
     		if(current >= count || mStop){
     			return targetFile;
     		}
-    		
     		int readLen = 0;
     		byte[] buffer = new byte[1024];
     		while (!mStop && !(current >= count) && ((readLen = input.read(buffer,0,1024)) > 0) ) {//未全部读取
@@ -239,11 +213,9 @@ https://github.com/yangfuhai/afinal
     			callback.callBack(count, current,false);
     		}
     		callback.callBack(count, current,true);
-    		
     		if(mStop && current < count){ //用户主动停止
     			throw new IOException("user stop download thread");
     		}
-    		
     		return targetFile;
     	}
     	
@@ -311,6 +283,54 @@ https://github.com/yangfuhai/afinal
         // [16] Length of this blob (not including header)
         // [20] Blob
 
+** 缓存大小  **
+
+    /**
+	 * 配置内存缓存大小 大于2MB以上有效
+	 * @param size 缓存大小
+	 */
+	public FinalBitmap configMemoryCacheSize(int size){
+		mConfig.memCacheSize = size;
+		return this;
+	}
+	
+	/**
+	 * 设置应缓存的在APK总内存的百分比，优先级大于configMemoryCacheSize
+	 * @param percent 百分比，值的范围是在 0.05 到 0.8之间
+	 */
+	public FinalBitmap configMemoryCachePercent(float percent){
+		mConfig.memCacheSizePercent = percent;
+		return this;
+	}
+	
+	/**
+	 * 设置磁盘缓存大小 5MB 以上有效
+	 * @param size
+	 */
+	public FinalBitmap configDiskCacheSize(int size){
+		mConfig.diskCacheSize = size;
+		return this;
+	} 
+
+如果配置的百分比，又是如何计算的呢？是在net/tsz/afinal/bitmap/core/BitmapCache.java里面计算的：
+
+    /**
+     * 设置缓存大小 
+     * @param context
+     * @param percent 百分比，值的范围是在 0.05 到 0.8之间，默认是0.3f
+     */
+    public void setMemCacheSizePercent(Context context, float percent) {
+        if (percent < 0.05f || percent > 0.8f) {
+            throw new IllegalArgumentException("setMemCacheSizePercent - percent must be "
+                    + "between 0.05 and 0.8 (inclusive)");
+        }
+        memCacheSize = Math.round(percent * getMemoryClass(context) * 1024 * 1024);
+    }
+    
+    private static int getMemoryClass(Context context) {
+        return ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE)).getMemoryClass();
+    }
+    
 
 ** 显示图片 **
 
@@ -358,3 +378,223 @@ https://github.com/yangfuhai/afinal
 	
 	
 ## Http Multipart支持
+
+multipart/form-data有如下要求：
+
+1. Content-Type，且其值也必须规定为multipart/form-data，同时还需要规定一个内容分割符用于分割请求体中的多个post的内容，如文件内容和文本内容自然需要分割开来，不然接收方就无法正常解析和还原这个文件了。
+2. body为如下格式:name为表单项的名称，filename对应本地文件名称路径
+
+        --${bound}
+        Content-Disposition: form-data; name="Filename"
+        
+        HTTP.pdf
+        --${bound}
+        Content-Disposition: form-data; name="file000"; filename="HTTP协议详解.pdf"
+        Content-Type: application/octet-stream
+        
+        %PDF-1.5
+        file content
+        %%EOF
+        
+        --${bound}
+        Content-Disposition: form-data; name="Upload"
+        
+        Submit Query
+        --${bound}--
+
+
+afinal FinalHttp的使用方法：
+
+    AjaxParams params = new AjaxParams();
+    params.put("username", "michael yang");
+    params.put("password", "123456");
+    params.put("email", "test@tsz.net");
+    params.put("profile_picture", new File("/mnt/sdcard/pic.jpg")); // 上传文件
+    params.put("profile_picture2", inputStream); // 上传数据流
+    params.put("profile_picture3", new ByteArrayInputStream(bytes)); // 提交字节流
+    
+    FinalHttp fh = new FinalHttp();
+    fh.post("http://www.yangfuhai.com", params, new AjaxCallBack(){
+        @Override
+        public void onLoading(long count, long current) {
+                textView.setText(current+"/"+count);
+        }
+    
+        @Override
+        public void onSuccess(String t) {
+            textView.setText(t==null?"null":t);
+        }
+    });
+    
+源码分析：
+
+    public void post(String url, AjaxParams params, AjaxCallBack<? extends Object> callBack) {
+        post(url, paramsToEntity(params), null, callBack);
+    }
+
+    public void post( String url, HttpEntity entity, String contentType, AjaxCallBack<? extends Object> callBack) {
+        sendRequest(httpClient, httpContext, addEntityToRequestBase(new HttpPost(url), entity), contentType, callBack);
+    }
+    
+    protected <T> void sendRequest(DefaultHttpClient client, HttpContext httpContext, HttpUriRequest uriRequest, String contentType, AjaxCallBack<T> ajaxCallBack) {
+        if(contentType != null) {
+            uriRequest.addHeader("Content-Type", contentType);
+        }
+
+        new HttpHandler<T>(client, httpContext, ajaxCallBack,charset)
+        .executeOnExecutor(executor, uriRequest);
+
+    }
+    
+调用的是HttpHandler.executeOnExecutor（继承AsyncTask）,关键在于paramsToEntity(params)构造的entity：
+
+    private HttpEntity paramsToEntity(AjaxParams params) {
+        HttpEntity entity = null;
+
+        if(params != null) {
+            entity = params.getEntity();
+        }
+
+        return entity;
+    }
+    
+根据参数的不同构造entity，如果包含文件则会构造成MultipartEntity：
+
+    /**
+     * Returns an HttpEntity containing all request parameters
+     */
+    public HttpEntity getEntity() {
+        HttpEntity entity = null;
+
+        if(!fileParams.isEmpty()) {
+            MultipartEntity multipartEntity = new MultipartEntity();
+
+            // Add string params
+            for(ConcurrentHashMap.Entry<String, String> entry : urlParams.entrySet()) {
+                multipartEntity.addPart(entry.getKey(), entry.getValue());
+            }
+
+            // Add file params
+            int currentIndex = 0;
+            int lastIndex = fileParams.entrySet().size() - 1;
+            for(ConcurrentHashMap.Entry<String, FileWrapper> entry : fileParams.entrySet()) {
+                FileWrapper file = entry.getValue();
+                if(file.inputStream != null) {
+                    boolean isLast = currentIndex == lastIndex;
+                    if(file.contentType != null) {
+                        multipartEntity.addPart(entry.getKey(), file.getFileName(), file.inputStream, file.contentType, isLast);
+                    } else {
+                        multipartEntity.addPart(entry.getKey(), file.getFileName(), file.inputStream, isLast);
+                    }
+                }
+                currentIndex++;
+            }
+
+            entity = multipartEntity;
+        } else {
+            try {
+                entity = new UrlEncodedFormEntity(getParamsList(), ENCODING);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return entity;
+    }
+
+MultipartEntity中：
+
+1. Content-Type：(随机三十个字符为分隔符）
+
+        private final static char[] MULTIPART_CHARS = "-_1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    
+        private String boundary = null;
+    
+        public MultipartEntity() {
+            final StringBuffer buf = new StringBuffer();
+            final Random rand = new Random();
+            for (int i = 0; i < 30; i++) {
+                buf.append(MULTIPART_CHARS[rand.nextInt(MULTIPART_CHARS.length)]);
+            }
+            this.boundary = buf.toString();
+    
+        }
+    
+        @Override
+        public Header getContentType() {
+            return new BasicHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
+        }
+    
+2. body的构造：
+
+        public void writeFirstBoundaryIfNeeds(){
+            if(!isSetFirst){
+                try {
+                    out.write(("--" + boundary + "\r\n").getBytes());
+                } catch (final IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            isSetFirst = true;
+        }
+    
+        public void writeLastBoundaryIfNeeds() {
+            if(isSetLast){
+                return;
+            }
+            try {
+                out.write(("\r\n--" + boundary + "--\r\n").getBytes());
+            } catch (final IOException e) {
+                e.printStackTrace();
+            }
+            isSetLast = true;
+        }
+
+        public void addPart(final String key, final String value) {
+            writeFirstBoundaryIfNeeds();
+            try {
+                out.write(("Content-Disposition: form-data; name=\"" +key+"\"\r\n\r\n").getBytes());
+                out.write(value.getBytes());
+                out.write(("\r\n--" + boundary + "\r\n").getBytes());
+            } catch (final IOException e) {
+                e.printStackTrace();
+            }
+        }
+    
+        public void addPart(final String key, final String fileName, final InputStream fin, final boolean isLast){
+            addPart(key, fileName, fin, "application/octet-stream", isLast);
+        }
+    
+        public void addPart(final String key, final String fileName, final InputStream fin, String type, final boolean isLast){
+            writeFirstBoundaryIfNeeds();
+            try {
+                type = "Content-Type: "+type+"\r\n";
+                out.write(("Content-Disposition: form-data; name=\""+ key+"\"; filename=\"" + fileName + "\"\r\n").getBytes());
+                out.write(type.getBytes());
+                out.write("Content-Transfer-Encoding: binary\r\n\r\n".getBytes());
+                final byte[] tmp = new byte[4096];
+                int l = 0;
+                while ((l = fin.read(tmp)) != -1) {
+                    out.write(tmp, 0, l);
+                }
+                if(!isLast)
+                    out.write(("\r\n--" + boundary + "\r\n").getBytes());
+                out.flush();
+            } catch (final IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fin.close();
+                } catch (final IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    
+        public void addPart(final String key, final File value, final boolean isLast) {
+            try {
+                addPart(key, value.getName(), new FileInputStream(value), isLast);
+            } catch (final FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }

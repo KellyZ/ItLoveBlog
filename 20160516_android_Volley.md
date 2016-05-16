@@ -1,5 +1,3 @@
-# Volley
-
 ## 介绍
 
 官方文档：http://developer.android.com/training/volley/index.html
@@ -553,7 +551,7 @@ Request默认是加入NetworkDispatcher线程中执行的，如果需要同步�
             return this.mImageLoader;
         }
 
-* 使用初始化ImageLoader：
+* 使用ImageLoader：
 
 
         ImageLoader imageLoader = getImageLoader();

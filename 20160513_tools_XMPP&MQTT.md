@@ -316,7 +316,69 @@ XMPP通信原语有3种：message、presence和iq
 
 ## MQTT
 
+可以通过Paho的实现来学习：
 
+1. 官网： http://www.eclipse.org/paho/
+2. Java API Reference: http://www.eclipse.org/paho/files/javadoc/index.html
+3. Android Service库API Reference： http://www.eclipse.org/paho/files/android-javadoc/index.html
+4. 源代码和示例： https://github.com/eclipse/paho.mqtt.java
+
+> 报文格式
+
+参考：http://www.blogjava.net/yongboy/archive/2014/02/07/409587.html、http://www.xuebuyuan.com/1951015.html
+
+整体上协议可拆分为：固定头部+可变头部+消息体
+
+固定头部，使用两个字节，共16位：
+
+![](./images/mqtt_fixhead.png)
+
+可变头部，包含了协议名称，版本号，连接标志，用户授权，心跳时间等内容。
+
+![](./images/mqtt_second_head.png)
+
+（可变头部协议都是用：头两个字节表示下一部分的长度这样的组合）
+
+1. 首先最上面的8个字节是Protocol Name(编码名)，UTF编码的字符“MQIsdp”，头两个是编码名提长为6。
+2. Protocol Version，协议版本号，v3 也是固定的
+3. Connect Flag，连接标识，有点像固定头部的。8位分别代表不同的标志。第1个字节保留。其中Clean Session,Will flag，Will Qos, Will Retain都是相对于CONNECT消息来说的，usename flag和passwordflag，用来标识是否在消息体中传递用户和密码，只有标识了，消息体中的用户名和密码才用效，只标记密码而不标记用户名是不合法的。
+4. Keep Alive，表示响应时间，如果这个时间内，连接或发送操作未完成，则断开tcp连接，表示离线。
+5. 其他的还有Connect Return Code、Topic Name、Message Identifier
+
+> 报文类型
+
+0. 保留 
+1. 连接请求（CONNECT）
+2. 连接请求确认（CONNECTACK）
+3. 发布报文（PUBLISH）
+4. 发布报文确认（PUBACK）
+5. 发布报文确认（PUBREC） （针对服务质量级别为2）
+6. 发布确认报文（PUBREL) （对PUBREC的确认）
+7. 确定发布完成（PUBCOMP）
+8. 订阅命名的主题（SUBSCRIBE）
+9. 订阅报文确认（SUBACK）
+10. 退订命名的主题(UNSUBSCRIBE)
+11. 退订确认（UNSUBACK）
+12. Ping请求（PINGREQ）（心跳包）
+13. Ping应答（PINGRESP） 
+14. 断开通知（DISCONNECT）
+15. 保留
+
+Paho报文的实现：
+
+![](./images/paho_mqtt_android.png)
+
+android.service是android层提供的接口；
+
+client.mqttv3是java对协议的实现；
+
+不同报文类型的封装：
+
+![](./images/paho_mqtt_android_msg.png)
+
+对应的继承关系如下：
+
+![](./images/paho_mqtt_class.PNG)
 
 ## 参考
 

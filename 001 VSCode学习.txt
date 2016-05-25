@@ -1,0 +1,36 @@
+001 VSCode学习
+
+一、VSCode介绍
+
+	VSCode是微软开发的一款轻量级、快速、跨平台的web开发工具，很好兼容Node及ASP.NET v5。
+
+	在开发过程中，一款文本编辑器或IDE应该要具备这些功能的便捷使用方式：代码编辑、查找、调试、版本管理、任务执行等。
+		CMD+SHIFT+P打开命令版，输入命令关键字，不用再记忆菜单命令；
+		CMD+P打开命令行快速搜索文件；输入？号可以提示相关命令；
+		CMD+SHIFT+O打开符号搜索面板；
+		CMD+SHIFT+N新建一个VSCode窗口；CMD+N新建一个文件；
+		CMD+\拆分窗口；
+		CMD+B显示隐藏切换侧边栏；
+		CMD+SHIFT+D打开调试面板，调试配置文件.settings/launch.json；
+		CMD+,打开Preference设置页面；
+		CMD++,CMD+-放大缩小窗口；
+		CMD+SPACE自动补全；
+		CMD+.关联文件补全提醒（如angular）；
+		OPT+UPARROW/OPT+DOWNARROW移动行；
+		F8查看warning及error；
+		F12跳转到定义；SHIFT+F12查找所有引用；
+		CMD+F2修改所有当前变量； Click+OPTION选中多处光标；
+
+	安装tsd.d.ts来支持自动补全：
+		如：npm install tsd -g
+	
+
+二、开始使用VSCode
+
+三、智能工具
+
+四、重构
+
+五、调试
+
+六、Git集成

@@ -1,0 +1,33 @@
+##  账户管理与数据同步
+
+1. AccountManagerService : Authenticator、AAS（Account Authenticator Service）
+
+    /data/system/registered_service/android.accounts.AccountAuthenticator.xml
+
+    /data/system/registered_service/android.content.SyncAdapter.xml
+    
+    /data/system/accounts.db
+
+2. SyncManager : SyncAdapter、AbstractThreadSyncAdapter(onPerformSync)、SyncService
+
+    /data/system/sync/accounts.xml
+    
+    /data/system/sync/status.bin
+    
+    /data/system/sync/pending.bin
+    
+    /data/system/sync/stats.bin
+
+
+3. ContentService : ContentObserver、
+
+    ContentResovler.registerContentObserver
+    
+    ContentResolver.notifyChange
+    
+    
+## 数据同步策略
+
+1. SyncML: Synchronization Markup Language
+
+2. 基于版本号的增量式同步

@@ -87,6 +87,10 @@
 ## 参考
 
 1. http://jsrun.it/norahiko/oxIy  （排序可视化）
-2. http://www.jianshu.com/p/f5baf7f27a7e
-3. http://wiki.jikexueyuan.com/project/java-special-topic/sort.html
-4. http://bubkoo.com/2014/01/14/sort-algorithm/heap-sort/
+2. http://www.sorting-algorithms.com/  （排序可视化）
+3. http://www.vaikan.com/sort-dance/  （排序舞蹈化）
+4. http://www.jianshu.com/p/f5baf7f27a7e
+5. http://wiki.jikexueyuan.com/project/java-special-topic/sort.html
+6. http://bubkoo.com/2014/01/14/sort-algorithm/heap-sort/
+7. http://zh.visualgo.net/
+8. http://v.youku.com/v_show/id_XNjIwNTEzMTA0.html

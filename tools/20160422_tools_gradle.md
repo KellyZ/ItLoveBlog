@@ -175,6 +175,8 @@ productFlavors：在这里你可以设置你的产品发布的一些东西，比
         }
     }
     
+Build Type + Product Flavor = Build Variant
+
 ## 参考
 
 1. http://www.2cto.com/kf/201501/366464.html

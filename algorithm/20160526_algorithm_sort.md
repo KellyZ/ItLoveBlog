@@ -40,13 +40,45 @@
 
 对无序序列的左右两个子序列分别排序，然后将两个子序列归并，两个子序列可以继续这样递归操作进行排序，如此，就好像颗倒立的树一样，不断的拆分排序然后归并；
 
+    public static void merge(Comparable[] a, int lo, int mid, int hi)
+    {
+        int i =lo, j=mid+1;
 
+        //复制一份
+        for（int k = lo; k<=hi; k++)
+        {
+            aux[k] = a[k];
+        }
+        // 归并回到a[lo...hi]
+        for (int k=lo; k<= hi; k++){
+            if (i>mid)       a[k] = aux[j++];
+            else if (j>hi)   a[k] = aux[i++];
+            else if( less(aux[j], aux[i]) )  a[k] = aux[j++];
+            else  a[k] = aux[i++];
+       }
+    }
 
 ## 快速排序
 
 归并排序默认是对半分，快速排序是随机切分，关键在切分：一般的策略是先随意选取a[lo]作为切分元素，然后左右扫描交换，使得切分位置所有左边元素都小于切分元素，右边元素都大于切分元素。
 
 ![快速排序](https://raw.githubusercontent.com/KellyZ/ItLoveBlog/master/images/Visual-and-intuitive-feel-of-7-common-sorting-algorithms.gif)
+
+    private static int partition(Comparable[] a, int lo, int hi)
+    {
+        int i=lo, j=hi+1;
+        Comparable v = a[lo];
+        while (true)
+        {
+            //扫描左右，检查扫描是否结束并交换元素
+            while (less(a[++i], v))     if (i==hi) break;
+            while (less(a[v, a[--j]))   if (j==lo) break;
+            if (i>=j) break;
+            exch(a, i, j);
+        }
+        exch(a,lo, j);
+        return j;
+    }
 
 ## 堆排序
 
